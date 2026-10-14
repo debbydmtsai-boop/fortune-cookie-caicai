@@ -40,14 +40,36 @@
     .touch-cue{position:absolute;z-index:4;left:50%;top:43%;transform:translateX(-50%);white-space:nowrap;padding:8px 13px;border-radius:30px;background:rgba(28,20,14,.72);color:#fff1d7;font-size:13px;letter-spacing:.06em;pointer-events:none;animation:breathe 2.3s ease-in-out infinite}
     .touch-cue[hidden]{display:none}
     @keyframes breathe{50%{opacity:.64;transform:translateX(-50%) scale(1.045)}}
-    .flight{position:absolute;z-index:5;left:49.5%;top:55%;width:10%;height:2%;border-radius:2px;background:linear-gradient(90deg,#f9f6eb,#fff,#eae0d2);box-shadow:0 2px 8px #1c130b7a;opacity:0;transform:translate(-50%,-50%) rotate(-12deg);pointer-events:none}
+    .flight{position:absolute;z-index:5;left:49.5%;top:55%;width:10%;height:2%;opacity:0;transform:translate(-50%,-50%) rotate(-12deg);pointer-events:none}
     .flight.rise{opacity:1;animation:rise 1.65s ease-in-out forwards}
+    /* One thin paper surface. The outer flight keeps the approved path and timing. */
+    .flight-paper{position:relative;display:block;width:100%;height:100%;overflow:hidden;
+      border-radius:3px 2px 4px 2px / 35% 28% 42% 30%;
+      background:
+        repeating-linear-gradient(106deg,rgba(124,105,79,.025) 0,rgba(124,105,79,.025) .35px,transparent .7px,transparent 3px),
+        linear-gradient(165deg,rgba(255,255,255,.42),transparent 40%,rgba(157,135,104,.08) 67%,rgba(255,255,255,.25)),
+        linear-gradient(90deg,#ece6da 0%,#faf7ef 14%,#fffdf6 39%,#ede7da 57%,#fffaf0 80%,#e8dfd1 100%);
+      -webkit-clip-path:polygon(0 22%,2% 11%,23% 9%,48% 4%,72% 10%,97% 5%,100% 18%,99% 81%,97% 93%,74% 91%,49% 96%,25% 91%,2% 95%,0 82%);
+      clip-path:polygon(0 22%,2% 11%,23% 9%,48% 4%,72% 10%,97% 5%,100% 18%,99% 81%,97% 93%,74% 91%,49% 96%,25% 91%,2% 95%,0 82%);
+      transform-origin:18% 51%;filter:drop-shadow(0 2px 3px rgba(28,19,11,.27));
+      backface-visibility:hidden;-webkit-backface-visibility:hidden}
+    .flight-paper::before,.flight-paper::after{content:"";position:absolute;inset:0;pointer-events:none}
+    .flight-paper::before{background:linear-gradient(98deg,transparent 35%,rgba(133,110,79,.12) 46%,rgba(255,255,255,.30) 52%,transparent 62%);opacity:.74}
+    .flight-paper::after{background:linear-gradient(170deg,transparent 74%,rgba(121,97,70,.11) 89%,rgba(255,255,255,.32) 99%);opacity:.7}
+    .flight.rise .flight-paper{animation:paperFlex 1.65s ease-in-out forwards}
+    @keyframes paperFlex{
+      0%{transform:perspective(180px) rotateY(-8deg) rotateX(6deg) skewY(-2deg) scaleY(.91)}
+      42%{transform:perspective(180px) rotateY(3deg) rotateX(-4deg) skewY(1.4deg) scaleY(1.045)}
+      72%{transform:perspective(180px) rotateY(-2deg) rotateX(2deg) skewY(-.8deg) scaleY(.98)}
+      100%{transform:perspective(180px) rotateY(0deg) rotateX(1deg) skewY(-.3deg) scaleY(1.01)}
+    }
     @keyframes rise{
       0%{opacity:1;left:49.5%;top:55%;width:10%;height:2%;transform:translate(-50%,-50%) rotate(-12deg)}
       42%{left:52%;top:46%;width:15%;height:2.2%;transform:translate(-50%,-50%) rotate(7deg)}
       100%{left:50%;top:42%;width:24%;height:3%;transform:translate(-50%,-50%) rotate(-2deg)}
     }
     .flight.hide{opacity:0;transition:opacity .2s}
+    .flight.hide .flight-paper{opacity:0;transition:opacity .2s}
     .paper-shade{position:absolute;inset:0;z-index:5;background:rgba(19,13,9,.37);opacity:0;pointer-events:none;transition:opacity .7s}
     .paper-shade.show{opacity:1}
     .paper-card{position:absolute;z-index:6;left:50%;top:50%;height:80%;aspect-ratio:337/1294;max-width:52%;opacity:0;transform:translate(-50%,-50%) scale(.37,.04);transform-origin:center;pointer-events:none;transition:opacity .24s ease,transform 1.08s cubic-bezier(.22,.68,.17,1)}
@@ -88,7 +110,7 @@
     @media(prefers-reduced-motion:reduce){.intro-story,.intro-story.show{transition:none;transform:none}
       .intro-story.show .intro-story-copy::after{animation:none}}
     @media(max-height:650px){body{padding-top:6px}.brand{margin-bottom:5px}.screen{max-height:calc(100dvh - 126px);margin:auto;width:auto;max-width:100%}.controls{margin-top:6px}}
-    @media(prefers-reduced-motion:reduce){.world,.world.zoom,.plate,video,.state-layer,.paper-card,.paper-shade{transition-duration:.01ms}.touch-cue{animation:none}}
+    @media(prefers-reduced-motion:reduce){.world,.world.zoom,.plate,video,.state-layer,.paper-card,.paper-shade{transition-duration:.01ms}.touch-cue{animation:none}.flight.rise .flight-paper{animation:none}}
 
     /* V1.1 approved illustrated cover: show full original 2:3 poster, without cropping. */
     .brand{display:none!important} /* Brand already printed into the supplied cover. */
@@ -126,7 +148,7 @@
     </div>
     <button class="cookie-hit" id="cookieHit" type="button" aria-label="觸碰幸運餅乾" hidden></button>
     <span class="touch-cue" id="cue" hidden>輕觸幸運餅乾</span>
-    <div class="flight" id="flight" aria-hidden="true"></div>
+    <div class="flight" id="flight" aria-hidden="true"><span class="flight-paper"></span></div>
     <div class="paper-shade" id="shade"></div>
     <div class="paper-card" id="paper">
       <img src="fortune_washi.png" alt="" />

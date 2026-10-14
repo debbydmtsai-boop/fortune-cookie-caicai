@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#251b14" />
+  <title>幸運餅乾｜Caiverse 蔡蔡宇宙</title>
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#1f1711;color:#f6efe3;font-family:system-ui,-apple-system,"PingFang TC",sans-serif}
+    body{padding:calc(12px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));display:flex;justify-content:center}
+    main{width:min(100%,480px)}
+    .brand{color:#d9c7ad;font-size:13px;letter-spacing:.04em;line-height:1.5;margin:0 0 9px 3px}
+    .brand.hidden{display:none}
+    .screen{position:relative;width:100%;aspect-ratio:512/910;overflow:hidden;border-radius:10px;background:#261e15;isolation:isolate}
+    video,.world,.world img{position:absolute;inset:0;width:100%;height:100%}
+    video{object-fit:cover;opacity:1;transition:opacity .58s ease;z-index:3}
+    video.off{opacity:0;pointer-events:none}
+    .world{opacity:0;transition:opacity .58s ease;z-index:2;transform-origin:50% 72.5%;will-change:transform,opacity}
+    .world.active{opacity:1}
+    .world.zoom{transform:translateY(-10.3%) scale(1.48);transition:opacity .58s ease,transform 2.6s cubic-bezier(.3,.12,.22,1)}
+    .world img{object-fit:fill;user-select:none;-webkit-user-drag:none}
+    .plate{transform:translateX(-107%);transition:transform 1.75s cubic-bezier(.19,.75,.24,1)}
+    .plate.arrived{transform:translateX(0)}
+    .state-layer{opacity:0;transition:opacity .32s ease}
+    .state-layer.show{opacity:1}
+    .cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(25,18,12,.37),rgba(25,18,12,.81));z-index:8;text-align:center;padding:24px;gap:13px}
+    .cover.hidden{display:none}
+    .cover h1{font-size:27px;font-weight:550;letter-spacing:.1em;margin:0;text-shadow:0 2px 8px #24150a}
+    .cover p{font-size:14px;max-width:290px;line-height:1.8;margin:0 0 8px;color:#f1e3ce}
+    button{appearance:none;min-height:44px;border-radius:24px;padding:10px 18px;border:1px solid #bea787;background:#2c2119;color:#f7ead9;font-size:14px;font-weight:600;cursor:pointer;touch-action:manipulation}
+    button.primary{background:#f0dabc;color:#352719;border-color:#f0dabc}
+    button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+    button[hidden]{display:none!important}
+    .controls{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:12px 0 0}
+    .controls button{min-width:80px}
+    .info{margin:10px 0 0;text-align:center;line-height:1.55;color:#e0cfb5;font-size:13px;min-height:22px}
+    .cookie-hit{position:absolute;z-index:4;left:50%;top:58%;width:50%;height:20%;transform:translate(-50%,-50%);border:0;padding:0;background:transparent;color:transparent;border-radius:50%;touch-action:manipulation}
+    .cookie-hit:focus-visible{outline:3px solid #ffe5b2}
+    .touch-cue{position:absolute;z-index:4;left:50%;top:43%;transform:translateX(-50%);white-space:nowrap;padding:8px 13px;border-radius:30px;background:rgba(28,20,14,.72);color:#fff1d7;font-size:13px;letter-spacing:.06em;pointer-events:none;animation:breathe 2.3s ease-in-out infinite}
+    .touch-cue[hidden]{display:none}
+    @keyframes breathe{50%{opacity:.64;transform:translateX(-50%) scale(1.045)}}
+    .flight{position:absolute;z-index:5;left:49.5%;top:55%;width:10%;height:2%;border-radius:2px;background:linear-gradient(90deg,#f9f6eb,#fff,#eae0d2);box-shadow:0 2px 8px #1c130b7a;opacity:0;transform:translate(-50%,-50%) rotate(-12deg);pointer-events:none}
+    .flight.rise{opacity:1;animation:rise 1.65s ease-in-out forwards}
+    @keyframes rise{
+      0%{opacity:1;left:49.5%;top:55%;width:10%;height:2%;transform:translate(-50%,-50%) rotate(-12deg)}
+      42%{left:52%;top:46%;width:15%;height:2.2%;transform:translate(-50%,-50%) rotate(7deg)}
+      100%{left:50%;top:42%;width:24%;height:3%;transform:translate(-50%,-50%) rotate(-2deg)}
+    }
+    .flight.hide{opacity:0;transition:opacity .2s}
+    .paper-shade{position:absolute;inset:0;z-index:5;background:rgba(19,13,9,.37);opacity:0;pointer-events:none;transition:opacity .7s}
+    .paper-shade.show{opacity:1}
+    .paper-card{position:absolute;z-index:6;left:50%;top:50%;height:80%;aspect-ratio:337/1294;max-width:52%;opacity:0;transform:translate(-50%,-50%) scale(.37,.04);transform-origin:center;pointer-events:none;transition:opacity .24s ease,transform 1.08s cubic-bezier(.22,.68,.17,1)}
+    .paper-card.unfold{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    .paper-card img{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 10px #160f0baa)}
+    .fortune-copy{position:absolute;left:16%;right:15%;top:30%;bottom:13%;display:flex;flex-direction:row-reverse;justify-content:center;align-items:flex-start;gap:5px;color:#3a2923;font-family:"Songti TC","Noto Serif TC","PMingLiU",serif;text-shadow:0 0 1px #fffbf0}
+    .fortune-copy p{margin:0;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:.07em;line-height:1.55}
+    .fortune-title{font-size:clamp(13px,3.65vw,18px);font-weight:700;color:#673b2b;white-space:nowrap}
+    .fortune-blessing{font-size:clamp(12px,3.5vw,17px);font-weight:500;height:100%;max-width:calc(100% - 24px);overflow-wrap:anywhere}
+    .fortune-copy[hidden]{display:none}
+    @media(max-height:650px){body{padding-top:6px}.brand{margin-bottom:5px}.screen{max-height:calc(100dvh - 126px);margin:auto;width:auto;max-width:100%}.controls{margin-top:6px}}
+    @media(prefers-reduced-motion:reduce){.world,.world.zoom,.plate,video,.state-layer,.paper-card,.paper-shade{transition-duration:.01ms}.touch-cue{animation:none}}
+  </style>
+</head>
+<body>
+<main>
+  <p class="brand" id="brand">Caiverse｜蔡蔡宇宙</p>
+  <div class="screen" id="screen">
+    <div class="world" id="world" aria-hidden="true">
+      <img src="assets/tea_empty_9x16.jpg" alt="" />
+      <img class="plate" id="plate" src="assets/plate_layer_9x16.png" alt="" />
+      <img class="state-layer" id="whole" src="assets/cookie_01_whole.png" alt="" />
+      <img class="state-layer" id="cracked" src="assets/cookie_02_first_crack.png" alt="" />
+      <img class="state-layer" id="broken" src="assets/cookie_03_broken_with_white_slip.png" alt="" />
+      <img class="state-layer" id="emptied" src="assets/cookie_04_broken_without_slip.png" alt="" />
+    </div>
+    <video id="intro" preload="auto" poster="assets/tea_empty_9x16.jpg" playsinline webkit-playsinline src="assets/intro.mp4" aria-label="日式茶屋前導影片"></video>
+    <button class="cookie-hit" id="cookieHit" type="button" aria-label="觸碰幸運餅乾" hidden></button>
+    <span class="touch-cue" id="cue" hidden>輕觸幸運餅乾</span>
+    <div class="flight" id="flight" aria-hidden="true"></div>
+    <div class="paper-shade" id="shade"></div>
+    <div class="paper-card" id="paper">
+      <img src="assets/fortune_washi.png" alt="" />
+      <div class="fortune-copy" id="fortuneCopy" hidden>
+        <p class="fortune-title" id="fortuneTitle"></p>
+        <p class="fortune-blessing" id="fortuneBlessing"></p>
+      </div>
+    </div>
+    <div class="cover" id="cover">
+      <h1>幸運餅乾</h1>
+      <p>走進茶屋，親手打開一顆餅乾，收下一句給今天的溫柔祝福。</p>
+      <button type="button" class="primary" id="start">走進茶屋</button>
+    </div>
+  </div>
+  <nav class="controls" aria-label="播放與返回">
+    <button id="skip" hidden type="button">跳過前導</button>
+    <button id="musicToggle" type="button" aria-pressed="true">♫ 音樂開</button>
+    <button id="again" class="primary" hidden type="button">再來一顆</button>
+    <button id="home" hidden type="button">返回首頁</button>
+  </nav>
+  <p class="info" id="status" role="status" aria-live="polite">準備走進茶屋</p>
+</main>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const intro=$('intro'), world=$('world'), plate=$('plate'), cover=$('cover');
+  const skip=$('skip'), again=$('again'), home=$('home'), cue=$('cue');
+  const hit=$('cookieHit'), status=$('status'), brand=$('brand');
+  const flight=$('flight'), shade=$('shade'), paper=$('paper');
+  const copy=$('fortuneCopy'), title=$('fortuneTitle'), blessing=$('fortuneBlessing');
+  const layers=[$('whole'),$('cracked'),$('broken'),$('emptied')];
+  const toggle=$('musicToggle');
+  const soundNames=['tea-house-ambience-loop','ちいさなしあわせ','ceramic-plate-set-down',
+    'cookie-crack-first','cookie-crack-second','cookie-crumbs-fall','washi-paper-slide','washi-paper-unfold'];
+  let audioContext, buffers={}, musicSource, ambienceSource, musicGain, ambienceGain;
+  let soundPromise, soundOn=true, fortunesPromise, round=0, timers=[], phase='home', shownId=null;
+  const later=(fn,ms)=>{const n=round;const timer=setTimeout(()=>{if(n===round)fn();},ms);timers.push(timer)};
+  const cancelTimers=()=>{timers.forEach(clearTimeout);timers=[]};
+  const say=s=>{status.textContent=s};
+  const fade=(node,target,duration=.4)=>{if(!node||!audioContext)return;node.gain.cancelScheduledValues(audioContext.currentTime);node.gain.setTargetAtTime(target,audioContext.currentTime,Math.max(.01,duration/4))};
+  async function loadAudio(){
+    if(soundPromise)return soundPromise;
+    soundPromise=Promise.all(soundNames.map(async name=>{
+      try{
+        const response=await fetch('audio/'+encodeURIComponent(name)+'.mp3');
+        if(!response.ok)throw Error(response.status);
+        const data=await response.arrayBuffer();
+        buffers[name]=await audioContext.decodeAudioData(data);
+      }catch(err){console.warn('Audio unavailable:',name,err)}
+    }));
+    return soundPromise;
+  }
+  function loopAudio(name,volume){
+    if(!buffers[name])return null;
+    const source=audioContext.createBufferSource(),gain=audioContext.createGain();
+    source.buffer=buffers[name];source.loop=true;source.connect(gain).connect(audioContext.destination);
+    gain.gain.value=0;source.start();fade(gain,volume,.7);
+    return {source,gain};
+  }
+  function effect(name,volume=.3){
+    if(!soundOn||!audioContext||!buffers[name])return;
+    const source=audioContext.createBufferSource(),gain=audioContext.createGain();
+    source.buffer=buffers[name];gain.gain.value=volume;
+    source.connect(gain).connect(audioContext.destination);source.start();
+  }
+  async function unlockAudio(){
+    try{
+      audioContext ||= new (window.AudioContext||window.webkitAudioContext)();
+      await audioContext.resume();
+      const current=round;
+      await loadAudio();
+      if(current!==round||phase==='home')return;
+      if(!musicSource){musicSource=loopAudio('ちいさなしあわせ',soundOn&&phase!=='intro'?.23:0)}
+      if(!ambienceSource){ambienceSource=loopAudio('tea-house-ambience-loop',soundOn?.11:0)}
+    }catch(err){console.warn('Audio could not start:',err)}
+  }
+  function stopAudio(){
+    for(const name of ['musicSource','ambienceSource']){
+      const pair=name==='musicSource'?musicSource:ambienceSource;
+      if(pair){try{pair.source.stop()}catch(err){}}
+    }
+    musicSource=null;ambienceSource=null;
+  }
+  function showLayer(index){
+    layers.forEach((layer,i)=>layer.classList.toggle('show',i===index));
+  }
+  function reset(showCover=false){
+    round++;cancelTimers();phase=showCover?'home':'reset';
+    intro.pause();intro.classList.remove('off');
+    try{intro.currentTime=0}catch(err){}
+    world.classList.remove('active','zoom');plate.classList.remove('arrived');
+    layers.forEach(layer=>layer.classList.remove('show'));
+    flight.className='flight';shade.classList.remove('show');paper.classList.remove('unfold');
+    title.textContent='';blessing.textContent='';copy.hidden=true;hit.hidden=true;cue.hidden=true;
+    skip.hidden=true;again.hidden=true;home.hidden=showCover;brand.classList.toggle('hidden',!showCover);
+    cover.classList.toggle('hidden',!showCover);
+  }
+  async function begin(){
+    reset(false);phase='intro';skip.hidden=false;say('茶屋的門，為你打開了。');
+    // A single user gesture opens the audio context for later timed sound effects.
+    void unlockAudio();
+    try{await intro.play()}catch(err){say('影片未能播放，接著欣賞茶屋場景。');enterScene()}
+  }
+  function enterScene(){
+    if(phase!=='intro'&&phase!=='reset')return;
+    phase='scene';skip.hidden=true;
+    intro.pause();intro.classList.add('off');world.classList.add('active');
+    fade(musicSource?.gain,soundOn ? .23 : 0,.8);
+    say('茶屋安靜下來，一顆幸運餅乾正向你靠近。');
+    later(()=>{plate.classList.add('arrived')},900);
+    later(()=>{effect('ceramic-plate-set-down',.26)},2580);
+    later(()=>{world.classList.add('zoom')},3100);
+    later(()=>{
+      showLayer(0);phase='ready';hit.hidden=false;cue.hidden=false;
+      cue.textContent='輕觸幸運餅乾';say('輕觸餅乾，打開今天的祝福。');
+    },5800);
+  }
+  function chooseFortune(){
+    // Uniform draw over the full original list. No player-facing category.
+    return fortunesPromise.then(all=>all[Math.floor(Math.random()*all.length)]);
+  }
+  function breakCookie(){
+    if(phase==='ready'){
+      phase='first-lock';hit.hidden=true;cue.hidden=true;
+      showLayer(1);effect('cookie-crack-first',.37);say('喀嚓。再輕觸一次。');
+      later(()=>{if(phase==='first-lock'){phase='first';hit.hidden=false;cue.hidden=false;cue.textContent='再輕觸一次'}},420);
+    }else if(phase==='first'){
+      phase='second';hit.hidden=true;cue.hidden=true;showLayer(2);
+      effect('cookie-crack-second',.42);say('餅乾裡，藏著一張小紙條。');
+      later(()=>effect('cookie-crumbs-fall',.25),220);
+      later(startFlight,1030);
+    }
+  }
+  function startFlight(){
+    phase='flight';effect('washi-paper-slide',.24);
+    // Replace the photographed paper at the very frame the single animated slip rises.
+    showLayer(3);
+    flight.classList.add('rise');
+    later(unfoldPaper,1680);
+  }
+  async function unfoldPaper(){
+    phase='unfold';effect('washi-paper-unfold',.24);
+    shade.classList.add('show');paper.classList.add('unfold');flight.classList.add('hide');
+    say('一張和紙，在眼前慢慢展開。');
+    const current=round;
+    try{
+      const fortune=await chooseFortune();
+      if(current!==round)return;
+      shownId=fortune.id;
+      later(()=>reveal(fortune,current),1150);
+    }catch(err){
+      say('幸運籤暫時無法讀取。請確認完整素材資料夾已上傳。');
+      again.hidden=false;
+    }
+  }
+  function reveal(fortune,current){
+    if(round!==current)return;
+    copy.hidden=false;phase='reading';
+    const units=Array.from(fortune.title+fortune.blessing);
+    let i=0;
+    const tick=()=>{
+      if(round!==current)return;
+      if(i<units.length){
+        if(i<fortune.title.length)title.textContent+=units[i];
+        else blessing.textContent+=units[i];
+        i++;later(tick,105);
+      }else{phase='complete';again.hidden=false;say('這份祝福，送給今天的你。')}
+    };
+    tick();
+  }
+  function another(){
+    reset(false);enterScene();
+  }
+  function goHome(){
+    reset(true);stopAudio();say('準備走進茶屋');
+  }
+  function setMusic(){
+    soundOn=!soundOn;
+    toggle.textContent=soundOn?'♫ 音樂開':'♫ 音樂關';
+    toggle.setAttribute('aria-pressed',String(soundOn));
+    intro.muted=!soundOn;
+    fade(musicSource?.gain,soundOn&&phase!=='intro' ? .23 : 0);
+    fade(ambienceSource?.gain,soundOn ? .11 : 0);
+    if(soundOn&&phase!=='home')void unlockAudio();
+  }
+  fortunesPromise=fetch('data/fortune_100_v1_draft.json').then(r=>{
+    if(!r.ok)throw Error('fortune file '+r.status);return r.json();
+  }).then(items=>{
+    if(!Array.isArray(items)||items.length!==100||new Set(items.map(x=>x.id)).size!==100)throw Error('fortune list invalid');
+    return items;
+  });
+  // Keep any early load error attached to the promise until the card needs it.
+  fortunesPromise.catch(()=>{});
+  intro.addEventListener('ended',enterScene);
+  intro.addEventListener('error',()=>{if(phase==='intro')enterScene()});
+  $('start').addEventListener('click',begin);
+  skip.addEventListener('click',enterScene);
+  hit.addEventListener('click',breakCookie);
+  again.addEventListener('click',another);
+  home.addEventListener('click',goHome);
+  toggle.addEventListener('click',setMusic);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){intro.pause();audioContext?.suspend()}
+    else if(phase!=='home'){
+      void audioContext?.resume();
+      if(phase==='intro')void intro.play().catch(()=>say('可點擊「跳過前導」繼續。'));
+    }
+  });
+})();
+</script>
+</body>
+</html>
